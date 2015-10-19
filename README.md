@@ -30,6 +30,7 @@ source ~/.bashrc
 
 ```
 cd fileio
+make //编译依赖环境
 gcc -ansi -I../include -Wall -DLINUX -D_GNU_SOURCE  seek.c -o seek  -L../lib -lapue
 ./seek < /etc/passwd
 seek OK 
