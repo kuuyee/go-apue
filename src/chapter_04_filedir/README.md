@@ -130,3 +130,60 @@ Filesystem              1K-blocks    Used Available Use% Mounted on
 /dev/mapper/centos-root  14571520 4780692   9790828  33% /	//磁盘占用量少了
 ```
 
+### rename
+golang提供的对应的函数[os.Rename](https://gowalker.org/os#Rename)
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+func main() {
+	oldFile, err := os.Create("bar")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "创建文件报错：", err)
+	}
+	oldFile.Close()
+	time.Sleep(time.Second * 5)
+
+	//改文件
+	err = os.Rename("bar", "foo")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "创建文件报错：", err)
+	}
+
+	//改目录
+	err = os.Rename("oldpath", "newpath")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "创建文件报错：", err)
+	}
+}
+```
+
+> 如果new文件已经存在则报错：`创建文件报错：%!(EXTRA *os.LinkError=rename bar foo: Cannot create a file when that file already exists.)`
+
+### symlink
+golang提供的对应的函数[os.Symlink](https://gowalker.org/os#Symlink)
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	err := os.Symlink("foo", "foolink")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "创建文件报错：", err)
+	}
+
+	fmt.Println(os.Readlink("foolink"))
+}
+```
+
