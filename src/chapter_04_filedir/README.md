@@ -201,7 +201,7 @@ import (
 func main() {
 	linkInfo, err := os.Readlink("foolink")
 	if err != nil {
-		fmt.Errorf("读取链接报错：", err)
+		fmt.Errorf("读取链接报错 %s", err)
 		return
 	}
 	fmt.Println(linkInfo)
