@@ -187,3 +187,166 @@ func main() {
 }
 ```
 
+### readlink
+如果读取的不是软连接则返回空
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	linkInfo, err := os.Readlink("foolink")
+	if err != nil {
+		fmt.Errorf("读取链接报错：", err)
+		return
+	}
+	fmt.Println(linkInfo)
+}
+```
+
+### futimens
+golang没有futimens函数，但是有Chtimes：[https://gowalker.org/os#Chtimes](https://gowalker.org/os#Chtimes)
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+func main() {
+	fooInfo, err := os.Stat("foo")
+	if err != nil {
+		fmt.Errorf("读取文件状态报错 %s", err)
+		return
+	}
+	initTime := fooInfo.ModTime()
+	fmt.Printf("foo最后修改时间是：%v\n", initTime)
+
+	fooFile, err := os.OpenFile("foo", os.O_TRUNC, 0666)
+	if err != nil {
+		fmt.Errorf("打开文件报错 %s", err)
+		return
+	}
+	ftime, _ := fooFile.Stat()
+	fmt.Printf("清空后的文件修改时间是：%v\n", ftime.ModTime())
+	fooFile.Close()
+
+	err = os.Chtimes("foo", time.Now(), initTime)
+	if err != nil {
+		fmt.Errorf("修改时间戳报错 %s", err)
+	}
+}
+```
+
+验证时间戳更改
+
+```
+$ ls -la
+-rwxrwxrwx. 1 vagrant vagrant    0 Nov  3 01:49 foo // 时间戳 3 01:49
+
+$ go run futimens.go 
+foo最后修改时间是：2015-11-03 01:49:58 +0000 WET
+清空后的文件修改时间是：2015-11-03 01:57:53 +0000 WET // 时间戳改变
+[vagrant@mydev chapter_04_filedir]$ ls -l
+-rwxrwxrwx. 1 vagrant vagrant    0 Nov  3 01:49 foo	 // 时间戳被还原了
+```
+
+
+
+
+### ftw8
+golang提供了遍历目录的函数walk:[https://gowalker.org/path/filepath#Walk](https://gowalker.org/path/filepath#Walk)
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
+var nreg, ndir int
+
+type myfunc filepath.WalkFunc
+
+func main() {
+	flag.Parse()
+	root := flag.Arg(0)
+	fmt.Println("Root参数： ", root)
+
+	err := filepath.Walk(root, filepath.WalkFunc(myftw()))
+	if err != nil {
+		fmt.Errorf("遍历目录报错: %s", err)
+	}
+	fmt.Println("-----------------------")
+	fmt.Printf("目录总数：%d\n", ndir)
+	fmt.Printf("文件总数：%d\n", nreg)
+
+}
+
+func myftw() myfunc {
+	return func(path string, info os.FileInfo, err error) error {
+		if info == nil {
+			return nil
+		}
+		fmt.Println(path)
+		infoMode := info.Mode()
+
+		if infoMode.IsRegular() {
+			nreg++
+		}
+		if infoMode.IsDir() {
+			ndir++
+		}
+		return nil
+	}
+}
+```
+
+测试：
+
+```
+$ go run ftw8.go /home/vagrant/go-apue/src
+Root参数：  /home/vagrant/go-apue/src
+/home/vagrant/go-apue/src
+/home/vagrant/go-apue/src/chapter_03_fileio
+/home/vagrant/go-apue/src/chapter_03_fileio/1.txt
+/home/vagrant/go-apue/src/chapter_03_fileio/README.md
+/home/vagrant/go-apue/src/chapter_03_fileio/fileflags.go
+/home/vagrant/go-apue/src/chapter_03_fileio/hole.c
+/home/vagrant/go-apue/src/chapter_03_fileio/hole.go
+/home/vagrant/go-apue/src/chapter_03_fileio/mycat.go
+/home/vagrant/go-apue/src/chapter_03_fileio/seek.c
+/home/vagrant/go-apue/src/chapter_03_fileio/seek.go
+/home/vagrant/go-apue/src/chapter_04_filedir
+/home/vagrant/go-apue/src/chapter_04_filedir/README.md
+/home/vagrant/go-apue/src/chapter_04_filedir/a.out
+/home/vagrant/go-apue/src/chapter_04_filedir/access.go
+/home/vagrant/go-apue/src/chapter_04_filedir/bar
+/home/vagrant/go-apue/src/chapter_04_filedir/changemod.go
+/home/vagrant/go-apue/src/chapter_04_filedir/filetype.go
+/home/vagrant/go-apue/src/chapter_04_filedir/foo
+/home/vagrant/go-apue/src/chapter_04_filedir/foolink
+/home/vagrant/go-apue/src/chapter_04_filedir/ftw8.go
+/home/vagrant/go-apue/src/chapter_04_filedir/futimens.go
+/home/vagrant/go-apue/src/chapter_04_filedir/newpath
+/home/vagrant/go-apue/src/chapter_04_filedir/readlink.go
+/home/vagrant/go-apue/src/chapter_04_filedir/rename.go
+/home/vagrant/go-apue/src/chapter_04_filedir/symlink.go
+/home/vagrant/go-apue/src/chapter_04_filedir/u01
+/home/vagrant/go-apue/src/chapter_04_filedir/u02
+/home/vagrant/go-apue/src/chapter_04_filedir/umask.go
+/home/vagrant/go-apue/src/chapter_04_filedir/unlink.go
+-----------------------
+目录总数：5
+文件总数：23
+```
