@@ -350,3 +350,131 @@ Root参数：  /home/vagrant/go-apue/src
 目录总数：5
 文件总数：23
 ```
+
+
+### 4.21 mkdir rmdir
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	err := os.Mkdir("tempdir", 0666)
+	if err != nil {
+		fmt.Errorf("创建目录报错：%s", err)
+	}
+
+	err = os.MkdirAll("abc/def/g", 0666)
+	if err != nil {
+		fmt.Errorf("创建目录报错：%s", err)
+	}
+}
+```
+
+使用`os.Mkdir`只能创建一层目录，如果参数指定为多层，那么创建不成功，但是不报错。创建多层目录需要使用`os.MkdirAll`
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	err := os.Remove("tempdir")
+	if err != nil {
+		fmt.Errorf("删除目录报错：%s", err)
+	}
+
+	err = os.RemoveAll("abc")
+	if err != nil {
+		fmt.Errorf("删除目录报错：%s", err)
+	}
+}
+```
+
+使用`os.Remove("abc/tempdir")`如果目录存在，那么只会删除最后一级目录，目录不存在则什么都不做，`os.RemoveAll("abc")`会删除`abc`及所有子目录。
+
+### 4.23 chdir getwd
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	err := os.Chdir("newpath")
+	if err != nil {
+		fmt.Errorf("改变工作目录错误：%s", err)
+	}
+	fmt.Println("当前工作目录更改为：newpath")
+	err = os.Mkdir("tempdir", 0666)
+	if err != nil {
+		fmt.Errorf("创建目录报错：%s", err)
+	}
+}
+```
+
+**验证：**
+
+```
+$ pwd
+/home/vagrant/go-apue/src/chapter_04_filedir
+
+$ go run chdir.go 
+当前工作目录更改为：newpath
+
+$ pwd
+/home/vagrant/go-apue/src/chapter_04_filedir
+
+$ ls -la newpath/
+total 4
+drwxrwxrwx. 1 vagrant vagrant    0 Nov  6 01:52 .
+drwxrwxrwx. 1 vagrant vagrant 4096 Nov  6 01:52 ..
+drwxrwxrwx. 1 vagrant vagrant    0 Nov  6 01:52 tempdir
+```
+
+可以看出执行`chdir.go`前后的工作目录并没有改变，但是在程序中更改了工作目录后，我们创建了一个新目录`tempdir`，这个目录被创建在新的工作目录地下，说明chdir执行成功了。
+
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	err := os.Chdir("dirlink")
+	if err != nil {
+		fmt.Errorf("改变工作目录错误：%s", err)
+	}
+
+	workdir, _ := os.Getwd()
+	fmt.Printf("当前工作目录为： %s\n", workdir)
+
+}
+```
+
+**验证：**
+
+```
+$ go run getwd.go 
+当前工作目录为： /home/vagrant/go/src/github.com/kuuyee/go-apue/src/chapter_04_filedir/u02
+$ ls -l dirlink
+lrwxrwxrwx. 1 vagrant vagrant 0 Nov  6 02:02 dirlink -> u02
+```
+
+注意，chdir跟随符号连接，所以打印工作目录得出连接只想的目录
+
+### 4.24 
+有待进一步研究
