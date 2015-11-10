@@ -16,13 +16,13 @@ import (
 
 // Passwd结构包含/etc/passwd的七项内容
 type Passwd struct {
-	pw_name   string
-	pw_passwd string
-	pw_uid    string
-	pw_gid    string
-	pw_gecos  string
-	pw_dir    string
-	pw_shell  string
+	pw_name   string	//用户名
+	pw_passwd string	//加密口令
+	pw_uid    string	//用户ID
+	pw_gid    string	//用户组ID
+	pw_gecos  string	//注释字段
+	pw_dir    string	//初始工作目录
+	pw_shell  string	//初始Shell程序
 }
 
 func main() {
