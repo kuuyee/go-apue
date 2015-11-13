@@ -72,3 +72,50 @@ func ParsePasswdFile(r io.Reader) (map[string]Passwd, error) {
 $ go run passwd.go 
 root信息：{pw_name:root pw_passwd:x pw_uid:0 pw_gid:0 pw_gecos:root pw_dir:/root pw_shell:/bin/bash}
 ```
+
+
+### 6.9 gethostname
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Errorf("获取系统hostname报错：%s", err)
+		return
+	}
+	fmt.Printf("系统Hostname: %s\n", hostname)
+}
+```
+
+### 6.10 strftime
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	localtime := time.Now()
+	const layout = "Jan 2, 2006 at 3:04pm (MST)"
+	fmt.Printf("当前时间为：%s\n", localtime.Format(layout))
+	fmt.Printf("当前时间(Unix格式): %s\n", localtime.Format(time.UnixDate))
+}
+```
+
+输出
+
+```
+$ go run strftime.go 
+当前时间为：Nov 13, 2015 at 1:33am (WET)
+当前时间(Unix格式): Fri Nov 13 01:33:12 WET 2015
+```
