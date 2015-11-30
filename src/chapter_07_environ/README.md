@@ -34,7 +34,7 @@
 
 执行程序，并`Ctrl+c`看效果
 
-    $ go run interrupt.go
+    $ go run atexit3.go
     ^C
     收到终端信号，停止服务...
 
